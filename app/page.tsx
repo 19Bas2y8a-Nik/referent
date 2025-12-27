@@ -28,7 +28,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-zinc-50 to-blue-100 dark:from-black dark:to-zinc-900 font-sans p-2">
-      <div className="w-full max-w-md bg-white/90 dark:bg-zinc-900/80 shadow-2xl rounded-2xl p-6 sm:p-10 flex flex-col gap-7">
+      <div className="w-full max-w-2xl bg-white/90 dark:bg-zinc-900/80 shadow-2xl rounded-2xl p-6 sm:p-10 flex flex-col gap-7">
         <div className="w-full flex justify-center pt-4 pb-7">
           <span className="text-xl sm:text-2xl font-extrabold text-blue-700 dark:text-zinc-100 tracking-wide select-none uppercase">
             Референт - переводчик с ИИ-обработкой
@@ -50,6 +50,7 @@ export default function Home() {
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 8.25V6a3.75 3.75 0 10-7.5 0v2.25m11.25 4.5v2.25a3.75 3.75 0 01-3.75 3.75H8.25A3.75 3.75 0 014.5 15V12.75m11.25-6v2.25m0 7.5H8.25m7.5 0V8.25A3.75 3.75 0 008.25 8.25v7.5" /></svg>
           </span>
         </div>
+        <div className="w-full text-sm font-semibold text-zinc-700 dark:text-zinc-200 mb-1 text-left pl-1">Выберите действие:</div>
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={() => handleClick("about")}
@@ -67,8 +68,14 @@ export default function Home() {
             disabled={!url || loading}
           >Пост для Telegram</button>
         </div>
+        <div className="w-full text-sm font-semibold text-zinc-700 dark:text-zinc-200 mb-1 text-left pl-1">Результат:</div>
         <div className="min-h-[110px] px-5 py-4 bg-zinc-50 dark:bg-zinc-800/80 border border-zinc-200 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 text-lg font-normal whitespace-pre-line transition-all">
-          {loading ? <span className="opacity-70">Генерация...</span> : result }
+          {loading 
+            ? <span className="opacity-70">Генерация...</span>
+            : result
+              ? result
+              : <span className="text-base font-normal text-zinc-500 dark:text-zinc-400">Результат появится здесь после выбора действия</span>
+          }
         </div>
       </div>
     </div>
