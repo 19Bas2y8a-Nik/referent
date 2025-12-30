@@ -7,24 +7,40 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleClick = (action: string) => {
+  const handleClick = async (action: string) => {
     setLoading(true);
     setResult("");
-    // Здесь будет интеграция c AI, пока – только эмуляция
-    setTimeout(() => {
-      switch (action) {
-        case "about":
-          setResult("Пример: Эта статья о роли AI в образовании.");
-          break;
-        case "thesis":
-          setResult("Пример: 1. AI помогает учиться. 2. Технологии изменяют образование. 3. Важно адаптироваться.");
-          break;
-        case "telegram":
-          setResult("Пример: Интересная статья про AI в обучении! Вот основные идеи...");
-          break;
+
+    try {
+      // Парсим HTML страницы
+      const parseResponse = await fetch("/api/parse", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ url }),
+      });
+
+      if (!parseResponse.ok) {
+        const errorData = await parseResponse.json().catch(() => ({ error: parseResponse.statusText }));
+        throw new Error(errorData.error || `Ошибка парсинга: ${parseResponse.statusText}`);
       }
+
+      const parsedData = await parseResponse.json();
+      
+      // Проверяем, есть ли ошибка в ответе
+      if (parsedData.error) {
+        throw new Error(parsedData.error);
+      }
+      
+      // Выводим JSON результат
+      setResult(JSON.stringify(parsedData, null, 2));
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
+      setResult(`Ошибка: ${errorMessage}`);
+    } finally {
       setLoading(false);
-    }, 900);
+    }
   };
 
   return (
