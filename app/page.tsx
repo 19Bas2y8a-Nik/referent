@@ -32,9 +32,39 @@ export default function Home() {
       if (parsedData.error) {
         throw new Error(parsedData.error);
       }
+
+      // Проверяем, что есть контент для обработки
+      if (!parsedData.content || parsedData.content === "Не найдено") {
+        throw new Error("Не удалось извлечь содержимое статьи. Попробуйте другую ссылку.");
+      }
+
+      // Отправляем данные в API для генерации ответа через AI
+      const generateResponse = await fetch("/api/generate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: parsedData.title,
+          content: parsedData.content,
+          action: action,
+        }),
+      });
+
+      if (!generateResponse.ok) {
+        const errorData = await generateResponse.json().catch(() => ({ error: generateResponse.statusText }));
+        throw new Error(errorData.error || `Ошибка генерации: ${generateResponse.statusText}`);
+      }
+
+      const generateData = await generateResponse.json();
       
-      // Выводим JSON результат
-      setResult(JSON.stringify(parsedData, null, 2));
+      // Проверяем, есть ли ошибка в ответе
+      if (generateData.error) {
+        throw new Error(generateData.error);
+      }
+      
+      // Выводим результат генерации
+      setResult(generateData.result || "Результат не получен");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
       setResult(`Ошибка: ${errorMessage}`);
@@ -73,6 +103,11 @@ export default function Home() {
               className="flex-1 py-3.5 bg-purple-600 text-white font-semibold rounded-xl transition-all hover:bg-purple-700 hover:shadow-lg disabled:bg-purple-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
               disabled={!url || loading}
             >Пост для Telegram</button>
+            <button
+              onClick={() => handleClick("translate")}
+              className="flex-1 py-3.5 bg-orange-600 text-white font-semibold rounded-xl transition-all hover:bg-orange-700 hover:shadow-lg disabled:bg-orange-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              disabled={!url || loading}
+            >Перевод</button>
           </div>
           <p className="text-lg font-semibold text-black dark:text-zinc-50 mb-4">Результат:</p>
           <div className="w-full min-h-[150px] p-6 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-black dark:text-zinc-100">

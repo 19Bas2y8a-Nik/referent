@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import * as cheerio from "cheerio";
 
+// Указываем runtime для Node.js (требуется для cheerio)
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     let { url } = await request.json();
@@ -67,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     const html = await response.text();
     
-    // Используем cheerio 0.22.0 с статическим импортом
+    // Используем cheerio для парсинга HTML
     const $ = cheerio.load(html);
 
     // Извлекаем заголовок
@@ -161,10 +164,19 @@ export async function POST(request: NextRequest) {
     console.error("Error parsing HTML:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : "Error";
+    
+    // Логируем детали ошибки для отладки
+    console.error("Error name:", errorName);
+    console.error("Error message:", errorMessage);
+    if (errorStack) {
+      console.error("Error stack:", errorStack);
+    }
     
     return NextResponse.json(
       { 
         error: errorMessage,
+        errorName: errorName,
         details: process.env.NODE_ENV === "development" ? errorStack : undefined
       },
       { status: 500 }
