@@ -2,7 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { title, content, action } = await request.json();
+    const body = await request.json();
+    const { title, content, action } = body;
+    
+    console.log("Generate request received:", { 
+      hasTitle: !!title, 
+      hasContent: !!content, 
+      contentLength: content?.length,
+      action 
+    });
 
     if (!title || !content || !action) {
       return NextResponse.json(
@@ -19,35 +27,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Определяем промпт в зависимости от действия
-    let systemPrompt = "";
-    let userPrompt = "";
-
-    switch (action) {
-      case "about":
-        systemPrompt = "Ты помощник, который кратко объясняет содержание статей. Отвечай на русском языке в дружелюбном тоне.";
-        userPrompt = `О чем эта статья?\n\nЗаголовок: ${title}\n\nСодержание:\n${content}\n\nДай краткое объяснение (2-3 предложения) о чем эта статья.`;
-        break;
-      case "thesis":
-        systemPrompt = "Ты помощник, который создает тезисы из статей. Отвечай на русском языке. Форматируй тезисы в виде списка с четкими пунктами.";
-        userPrompt = `Создай тезисы на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${content}\n\nСоздай список основных тезисов (5-7 пунктов).`;
-        break;
-      case "telegram":
-        systemPrompt = "Ты помощник, который создает посты для Telegram на основе статей. Отвечай на русском языке. Используй эмодзи, короткие абзацы и привлекательный стиль для социальных сетей.";
-        userPrompt = `Создай пост для Telegram на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${content}\n\nСоздай интересный пост для Telegram с эмодзи, который кратко рассказывает о статье и привлекает внимание.`;
-        break;
-      case "translate":
-        systemPrompt = "Ты профессиональный переводчик. Переводи статьи с английского языка на русский язык. Сохраняй структуру текста, форматирование и смысл оригинала. Переводи точно и естественно.";
-        userPrompt = `Переведи эту статью на русский язык:\n\nЗаголовок: ${title}\n\nСодержание:\n${content}\n\nПереведи весь текст статьи, включая заголовок, на русский язык. Сохрани структуру и форматирование.`;
-        break;
-      default:
-        return NextResponse.json(
-          { error: "Invalid action. Use 'about', 'thesis', 'telegram', or 'translate'" },
-          { status: 400 }
-        );
-    }
-
-    // Выбираем модель в зависимости от действия
+    // Выбираем модель и параметры в зависимости от действия
     let model = "openai/gpt-4o-mini";
     let maxTokens = 1000;
     let maxContentLength = 12000;
@@ -63,8 +43,33 @@ export async function POST(request: NextRequest) {
       ? content.substring(0, maxContentLength) + "..."
       : content;
 
-    // Формируем финальный промпт с обрезанным контентом
-    const finalUserPrompt = userPrompt.replace(content, truncatedContent);
+    // Определяем промпт в зависимости от действия (используем уже обрезанный контент)
+    let systemPrompt = "";
+    let userPrompt = "";
+
+    switch (action) {
+      case "about":
+        systemPrompt = "Ты помощник, который кратко объясняет содержание статей. Отвечай на русском языке в дружелюбном тоне.";
+        userPrompt = `О чем эта статья?\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nДай краткое объяснение (2-3 предложения) о чем эта статья.`;
+        break;
+      case "thesis":
+        systemPrompt = "Ты помощник, который создает тезисы из статей. Отвечай на русском языке. Форматируй тезисы в виде списка с четкими пунктами.";
+        userPrompt = `Создай тезисы на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nСоздай список основных тезисов (5-7 пунктов).`;
+        break;
+      case "telegram":
+        systemPrompt = "Ты помощник, который создает посты для Telegram на основе статей. Отвечай на русском языке. Используй эмодзи, короткие абзацы и привлекательный стиль для социальных сетей.";
+        userPrompt = `Создай пост для Telegram на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nСоздай интересный пост для Telegram с эмодзи, который кратко рассказывает о статье и привлекает внимание.`;
+        break;
+      case "translate":
+        systemPrompt = "Ты профессиональный переводчик. Переводи статьи с английского языка на русский язык. Сохраняй структуру текста, форматирование и смысл оригинала. Переводи точно и естественно.";
+        userPrompt = `Переведи эту статью на русский язык:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nПереведи весь текст статьи, включая заголовок, на русский язык. Сохрани структуру и форматирование.`;
+        break;
+      default:
+        return NextResponse.json(
+          { error: "Invalid action. Use 'about', 'thesis', 'telegram', or 'translate'" },
+          { status: 400 }
+        );
+    }
 
     // Вызываем OpenRouter API
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -84,7 +89,7 @@ export async function POST(request: NextRequest) {
           },
           {
             role: "user",
-            content: finalUserPrompt,
+            content: userPrompt,
           },
         ],
         temperature: 0.7,
@@ -118,8 +123,21 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error generating text:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    const errorStack = error instanceof Error ? error.stack : undefined;
+    const errorName = error instanceof Error ? error.name : "Error";
+    
+    console.error("Error details:", {
+      name: errorName,
+      message: errorMessage,
+      stack: errorStack
+    });
+    
     return NextResponse.json(
-      { error: errorMessage },
+      { 
+        error: errorMessage,
+        errorName: errorName,
+        details: process.env.NODE_ENV === "development" ? errorStack : undefined
+      },
       { status: 500 }
     );
   }
