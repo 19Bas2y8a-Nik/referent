@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Указываем runtime для Node.js (для работы с fetch и переменными окружения)
+export const runtime = 'nodejs';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -21,11 +24,14 @@ export async function POST(request: NextRequest) {
 
     const apiKey = process.env.OPENROUTER_API_KEY;
     if (!apiKey) {
+      console.error("OPENROUTER_API_KEY is not configured in environment variables");
       return NextResponse.json(
-        { error: "OPENROUTER_API_KEY is not configured" },
+        { error: "OPENROUTER_API_KEY is not configured. Please check your .env.local file." },
         { status: 500 }
       );
     }
+    
+    console.log("API Key found, length:", apiKey.length);
 
     // Выбираем модель и параметры в зависимости от действия
     let model = "openai/gpt-4o-mini";
@@ -71,6 +77,9 @@ export async function POST(request: NextRequest) {
         );
     }
 
+    console.log("Calling OpenRouter API with model:", model);
+    console.log("Prompt length:", userPrompt.length);
+    
     // Вызываем OpenRouter API
     const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",
@@ -99,10 +108,23 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorData = await response.text();
-      console.error("OpenRouter API error:", errorData);
+      console.error("OpenRouter API error - Status:", response.status);
+      console.error("OpenRouter API error - StatusText:", response.statusText);
+      console.error("OpenRouter API error - Body:", errorData);
+      
+      let errorMessage = `OpenRouter API error: ${response.statusText}`;
+      try {
+        const errorJson = JSON.parse(errorData);
+        if (errorJson.error?.message) {
+          errorMessage = errorJson.error.message;
+        }
+      } catch {
+        // Если не JSON, используем текст как есть
+      }
+      
       return NextResponse.json(
-        { error: `OpenRouter API error: ${response.statusText}` },
-        { status: response.status }
+        { error: errorMessage, details: process.env.NODE_ENV === "development" ? errorData : undefined },
+        { status: response.status >= 400 && response.status < 600 ? response.status : 500 }
       );
     }
 
