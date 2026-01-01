@@ -2,6 +2,24 @@
 Референт - переводчик с ИИ-обработкой
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
+## Настройка окружения
+
+Перед запуском приложения необходимо настроить переменные окружения:
+
+1. Создайте файл `.env.local` в корне проекта
+2. Добавьте следующие переменные:
+
+```env
+OPENROUTER_API_KEY=your_openrouter_api_key_here
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+```
+
+**Важно**: 
+- `OPENROUTER_API_KEY` - обязательная переменная. Получить ключ можно на [OpenRouter.ai](https://openrouter.ai/)
+- `NEXT_PUBLIC_APP_URL` - опциональная (по умолчанию используется `http://localhost:3000`)
+
+Подробные инструкции см. в [ENV_SETUP.md](./ENV_SETUP.md)
+
 ## Getting Started
 
 First, run the development server:

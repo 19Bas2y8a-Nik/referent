@@ -6,7 +6,7 @@ export const runtime = 'nodejs';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { title, content, action } = body;
+    const { title, content, action, url } = body;
     
     console.log("Generate request received:", { 
       hasTitle: !!title, 
@@ -63,8 +63,9 @@ export async function POST(request: NextRequest) {
         userPrompt = `Создай тезисы на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nСоздай список основных тезисов (5-7 пунктов).`;
         break;
       case "telegram":
-        systemPrompt = "Ты помощник, который создает посты для Telegram на основе статей. Отвечай на русском языке. Используй эмодзи, короткие абзацы и привлекательный стиль для социальных сетей.";
-        userPrompt = `Создай пост для Telegram на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nСоздай интересный пост для Telegram с эмодзи, который кратко рассказывает о статье и привлекает внимание.`;
+        systemPrompt = "Ты помощник, который создает посты для Telegram на основе статей. Отвечай на русском языке. Используй эмодзи, короткие абзацы и привлекательный стиль для социальных сетей. Всегда добавляй ссылку на источник в конце поста.";
+        const sourceLink = url ? `\n\nИсточник: ${url}` : "";
+        userPrompt = `Создай пост для Telegram на основе этой статьи:\n\nЗаголовок: ${title}\n\nСодержание:\n${truncatedContent}\n\nСоздай интересный пост для Telegram с эмодзи, который кратко рассказывает о статье и привлекает внимание. В конце поста обязательно добавь ссылку на источник статьи.${sourceLink}`;
         break;
       case "translate":
         systemPrompt = "Ты профессиональный переводчик. Переводи статьи с английского языка на русский язык. Сохраняй структуру текста, форматирование и смысл оригинала. Переводи точно и естественно.";
