@@ -8,6 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [urlError, setUrlError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [processStatus, setProcessStatus] = useState("");
 
   // Валидация URL
   const validateUrl = (urlString: string): boolean => {
@@ -54,6 +55,7 @@ export default function Home() {
     setLoading(true);
     setResult("");
     setUrlError("");
+    setProcessStatus("Загружаю статью…");
 
     try {
       // Парсим HTML страницы
@@ -81,6 +83,14 @@ export default function Home() {
       if (!parsedData.content || parsedData.content === "Не найдено") {
         throw new Error("Не удалось извлечь содержимое статьи. Попробуйте другую ссылку.");
       }
+
+      // Обновляем статус процесса
+      const actionNames: { [key: string]: string } = {
+        "about": "Анализирую статью…",
+        "thesis": "Создаю тезисы…",
+        "telegram": "Формирую пост для Telegram…"
+      };
+      setProcessStatus(actionNames[action] || "Обрабатываю…");
 
       // Отправляем данные в API для генерации ответа через AI
       const generateResponse = await fetch("/api/generate", {
@@ -115,6 +125,7 @@ export default function Home() {
       setResult(`Ошибка: ${errorMessage}`);
     } finally {
       setLoading(false);
+      setProcessStatus("");
     }
   };
 
@@ -126,7 +137,7 @@ export default function Home() {
           <p className="text-lg font-semibold text-black dark:text-zinc-50 mb-4">Ссылка на статью:</p>
           <input
             type="text"
-            placeholder="Вставьте URL англоязычной статьи"
+            placeholder="Введите URL статьи, например: https://example.com/article"
             value={url}
             onChange={e => {
               setUrl(e.target.value);
@@ -139,6 +150,7 @@ export default function Home() {
                 : "border-zinc-300 dark:border-zinc-700 focus:ring-blue-500"
             }`}
           />
+          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Укажите ссылку на англоязычную статью</p>
           {urlError && (
             <p className="text-red-500 text-sm mb-4">{urlError}</p>
           )}
@@ -148,18 +160,26 @@ export default function Home() {
               onClick={() => handleClick("about")}
               className="flex-1 py-3.5 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 hover:shadow-lg disabled:bg-blue-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
               disabled={!url || loading}
+              title="Получить краткое объяснение содержания статьи (2-3 предложения)"
             >О чем статья?</button>
             <button
               onClick={() => handleClick("thesis")}
               className="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition-all hover:bg-green-700 hover:shadow-lg disabled:bg-green-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
               disabled={!url || loading}
+              title="Создать список основных тезисов статьи (5-7 пунктов)"
             >Тезисы</button>
             <button
               onClick={() => handleClick("telegram")}
               className="flex-1 py-3.5 bg-purple-600 text-white font-semibold rounded-xl transition-all hover:bg-purple-700 hover:shadow-lg disabled:bg-purple-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
               disabled={!url || loading}
+              title="Создать пост для Telegram с эмодзи и ссылкой на источник"
             >Пост для Telegram</button>
           </div>
+          {processStatus && (
+            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-sm text-blue-700 dark:text-blue-300">{processStatus}</p>
+            </div>
+          )}
           <div className="flex items-center justify-between mb-4">
             <p className="text-lg font-semibold text-black dark:text-zinc-50">Результат:</p>
             {result && !loading && (
