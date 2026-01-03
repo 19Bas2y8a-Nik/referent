@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Alert, AlertDescription, AlertIcon } from "./components/ui/alert";
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -9,6 +10,7 @@ export default function Home() {
   const [urlError, setUrlError] = useState("");
   const [copied, setCopied] = useState(false);
   const [processStatus, setProcessStatus] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   // Валидация URL
   const validateUrl = (urlString: string): boolean => {
@@ -46,6 +48,62 @@ export default function Home() {
     }
   };
 
+  // Функция для получения дружественного сообщения об ошибке
+  const getFriendlyErrorMessage = (error: unknown, response?: Response): string => {
+    // Если это ошибка сети или таймаут
+    if (error instanceof TypeError && error.message.includes("fetch")) {
+      return "Не удалось загрузить статью по этой ссылке.";
+    }
+
+    // Если есть response, проверяем статус код
+    if (response) {
+      if (response.status === 404) {
+        return "Не удалось загрузить статью по этой ссылке.";
+      }
+      if (response.status === 403) {
+        return "Не удалось загрузить статью по этой ссылке.";
+      }
+      if (response.status >= 500) {
+        return "Не удалось загрузить статью по этой ссылке.";
+      }
+      if (response.status === 408 || response.status === 504) {
+        return "Не удалось загрузить статью по этой ссылке.";
+      }
+    }
+
+    // Если это Error с сообщением, проверяем его содержимое
+    if (error instanceof Error) {
+      const errorMessage = error.message.toLowerCase();
+      
+      // Ошибки загрузки статьи
+      if (errorMessage.includes("failed to fetch") || 
+          errorMessage.includes("network") ||
+          errorMessage.includes("timeout") ||
+          errorMessage.includes("404") ||
+          errorMessage.includes("500") ||
+          errorMessage.includes("403") ||
+          errorMessage.includes("парсинга")) {
+        return "Не удалось загрузить статью по этой ссылке.";
+      }
+
+      // Ошибки извлечения контента
+      if (errorMessage.includes("не удалось извлечь") || 
+          errorMessage.includes("не найдено")) {
+        return "Не удалось извлечь содержимое статьи. Попробуйте другую ссылку.";
+      }
+
+      // Ошибки генерации
+      if (errorMessage.includes("генерации") || 
+          errorMessage.includes("openrouter") ||
+          errorMessage.includes("api key")) {
+        return "Произошла ошибка при обработке статьи. Попробуйте позже.";
+      }
+    }
+
+    // Общая ошибка
+    return "Произошла ошибка. Попробуйте еще раз.";
+  };
+
   const handleClick = async (action: string) => {
     // Валидация URL перед отправкой
     if (!validateUrl(url)) {
@@ -55,33 +113,50 @@ export default function Home() {
     setLoading(true);
     setResult("");
     setUrlError("");
+    setError(null);
     setProcessStatus("Загружаю статью…");
 
     try {
       // Парсим HTML страницы
-      const parseResponse = await fetch("/api/parse", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ url }),
-      });
+      let parseResponse: Response;
+      try {
+        parseResponse = await fetch("/api/parse", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url }),
+        });
+      } catch (fetchError) {
+        // Ошибка сети или таймаут
+        const friendlyMessage = getFriendlyErrorMessage(fetchError);
+        setError(friendlyMessage);
+        setResult("");
+        return;
+      }
 
       if (!parseResponse.ok) {
-        const errorData = await parseResponse.json().catch(() => ({ error: parseResponse.statusText }));
-        throw new Error(errorData.error || `Ошибка парсинга: ${parseResponse.statusText}`);
+        const friendlyMessage = getFriendlyErrorMessage(null, parseResponse);
+        setError(friendlyMessage);
+        setResult("");
+        return;
       }
 
       const parsedData = await parseResponse.json();
       
       // Проверяем, есть ли ошибка в ответе
       if (parsedData.error) {
-        throw new Error(parsedData.error);
+        const friendlyMessage = getFriendlyErrorMessage(new Error(parsedData.error), parseResponse);
+        setError(friendlyMessage);
+        setResult("");
+        return;
       }
 
       // Проверяем, что есть контент для обработки
       if (!parsedData.content || parsedData.content === "Не найдено") {
-        throw new Error("Не удалось извлечь содержимое статьи. Попробуйте другую ссылку.");
+        setError("Не удалось извлечь содержимое статьи. Попробуйте другую ссылку.");
+        setResult("");
+        return;
       }
 
       // Обновляем статус процесса
@@ -93,36 +168,53 @@ export default function Home() {
       setProcessStatus(actionNames[action] || "Обрабатываю…");
 
       // Отправляем данные в API для генерации ответа через AI
-      const generateResponse = await fetch("/api/generate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          title: parsedData.title,
-          content: parsedData.content,
-          action: action,
-          url: url,
-        }),
-      });
+      let generateResponse: Response;
+      try {
+        generateResponse = await fetch("/api/generate", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            title: parsedData.title,
+            content: parsedData.content,
+            action: action,
+            url: url,
+          }),
+        });
+      } catch (fetchError) {
+        // Ошибка сети при генерации
+        const friendlyMessage = getFriendlyErrorMessage(fetchError);
+        setError(friendlyMessage);
+        setResult("");
+        return;
+      }
 
       if (!generateResponse.ok) {
-        const errorData = await generateResponse.json().catch(() => ({ error: generateResponse.statusText }));
-        throw new Error(errorData.error || `Ошибка генерации: ${generateResponse.statusText}`);
+        const friendlyMessage = getFriendlyErrorMessage(null, generateResponse);
+        setError(friendlyMessage);
+        setResult("");
+        return;
       }
 
       const generateData = await generateResponse.json();
       
       // Проверяем, есть ли ошибка в ответе
       if (generateData.error) {
-        throw new Error(generateData.error);
+        const friendlyMessage = getFriendlyErrorMessage(new Error(generateData.error));
+        setError(friendlyMessage);
+        setResult("");
+        return;
       }
       
       // Выводим результат генерации
       setResult(generateData.result || "Результат не получен");
+      setError(null);
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Неизвестная ошибка";
-      setResult(`Ошибка: ${errorMessage}`);
+      // Общая обработка неожиданных ошибок
+      const friendlyMessage = getFriendlyErrorMessage(error);
+      setError(friendlyMessage);
+      setResult("");
     } finally {
       setLoading(false);
       setProcessStatus("");
@@ -142,6 +234,10 @@ export default function Home() {
             onChange={e => {
               setUrl(e.target.value);
               validateUrl(e.target.value);
+              // Очищаем ошибку при изменении URL
+              if (error) {
+                setError(null);
+              }
             }}
             onBlur={() => validateUrl(url)}
             className={`w-full p-4 mb-2 border-2 rounded-xl text-base bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
@@ -179,6 +275,16 @@ export default function Home() {
             <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
               <p className="text-sm text-blue-700 dark:text-blue-300">{processStatus}</p>
             </div>
+          )}
+          {error && (
+            <Alert variant="destructive" className="mb-4">
+              <AlertDescription className="flex items-start gap-2">
+                <div className="mt-0.5 flex-shrink-0">
+                  <AlertIcon variant="destructive" />
+                </div>
+                <span>{error}</span>
+              </AlertDescription>
+            </Alert>
           )}
           <div className="flex items-center justify-between mb-4">
             <p className="text-lg font-semibold text-black dark:text-zinc-50">Результат:</p>
