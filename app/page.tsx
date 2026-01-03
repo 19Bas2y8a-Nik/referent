@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Alert, AlertDescription, AlertIcon } from "./components/ui/alert";
 
 export default function Home() {
@@ -11,6 +11,7 @@ export default function Home() {
   const [copied, setCopied] = useState(false);
   const [processStatus, setProcessStatus] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const resultRef = useRef<HTMLDivElement>(null);
 
   // Валидация URL
   const validateUrl = (urlString: string): boolean => {
@@ -47,6 +48,30 @@ export default function Home() {
       console.error("Ошибка копирования:", err);
     }
   };
+
+  // Функция для очистки всех состояний
+  const handleClear = () => {
+    setUrl("");
+    setResult("");
+    setUrlError("");
+    setError(null);
+    setProcessStatus("");
+    setCopied(false);
+    setLoading(false);
+  };
+
+  // Автоматическая прокрутка к результатам после успешной генерации
+  useEffect(() => {
+    if (result && !loading && resultRef.current) {
+      // Небольшая задержка для завершения рендеринга
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ 
+          behavior: "smooth", 
+          block: "start" 
+        });
+      }, 100);
+    }
+  }, [result, loading]);
 
   // Функция для получения дружественного сообщения об ошибке
   const getFriendlyErrorMessage = (error: unknown, response?: Response): string => {
@@ -250,7 +275,19 @@ export default function Home() {
           {urlError && (
             <p className="text-red-500 text-sm mb-4">{urlError}</p>
           )}
-          <p className="text-lg font-semibold text-black dark:text-zinc-50 mb-4">Выберите действие:</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-lg font-semibold text-black dark:text-zinc-50">Выберите действие:</p>
+            <button
+              onClick={handleClear}
+              className="px-4 py-2 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center gap-2"
+              title="Очистить все поля и результаты"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>Очистить</span>
+            </button>
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full mb-6">
             <button
               onClick={() => handleClick("about")}
@@ -312,7 +349,10 @@ export default function Home() {
               </button>
             )}
           </div>
-          <div className="w-full min-h-[150px] p-6 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-black dark:text-zinc-100 relative">
+          <div 
+            ref={resultRef}
+            className="w-full min-h-[150px] p-6 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-black dark:text-zinc-100 relative"
+          >
             {loading ? (
               <div className="flex flex-col items-center justify-center h-full gap-3">
                 <div className="relative w-12 h-12">
