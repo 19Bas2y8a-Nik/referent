@@ -251,7 +251,19 @@ export default function Home() {
       <main className="min-h-screen w-full max-w-5xl mx-auto flex flex-col items-center justify-center py-6 sm:py-12 px-4 gap-4 sm:gap-8">
         <div className="w-full bg-white dark:bg-zinc-950 shadow-xl rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-zinc-200 dark:border-zinc-800">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-black dark:text-zinc-50 mb-4 sm:mb-6 md:mb-8 break-words">Референт - переводчик с ИИ-обработкой</h1>
-          <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 mb-3 sm:mb-4">Ссылка на статью:</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+            <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50">Ссылка на статью:</p>
+            <button
+              onClick={handleClear}
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto"
+              title="Очистить все поля и результаты"
+            >
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              <span>Очистить</span>
+            </button>
+          </div>
           <input
             type="text"
             placeholder="Введите URL статьи, например: https://example.com/article"
@@ -275,19 +287,7 @@ export default function Home() {
           {urlError && (
             <p className="text-red-500 text-xs sm:text-sm mb-3 sm:mb-4 break-words">{urlError}</p>
           )}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
-            <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50">Выберите действие:</p>
-            <button
-              onClick={handleClear}
-              className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto"
-              title="Очистить все поля и результаты"
-            >
-              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-              <span>Очистить</span>
-            </button>
-          </div>
+          <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 mb-3 sm:mb-4">Выберите действие:</p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full mb-4 sm:mb-6">
             <button
               onClick={() => handleClick("about")}
