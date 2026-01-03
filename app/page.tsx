@@ -248,10 +248,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-black dark:to-zinc-900 font-sans">
-      <main className="min-h-screen w-full max-w-5xl mx-auto flex flex-col items-center justify-center py-12 px-4 gap-8">
-        <div className="w-full bg-white dark:bg-zinc-950 shadow-xl rounded-2xl p-8 border border-zinc-200 dark:border-zinc-800">
-          <h1 className="text-4xl font-bold text-center text-black dark:text-zinc-50 mb-8">Референт - переводчик с ИИ-обработкой</h1>
-          <p className="text-lg font-semibold text-black dark:text-zinc-50 mb-4">Ссылка на статью:</p>
+      <main className="min-h-screen w-full max-w-5xl mx-auto flex flex-col items-center justify-center py-6 sm:py-12 px-4 gap-4 sm:gap-8">
+        <div className="w-full bg-white dark:bg-zinc-950 shadow-xl rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-zinc-200 dark:border-zinc-800">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-black dark:text-zinc-50 mb-4 sm:mb-6 md:mb-8 break-words">Референт - переводчик с ИИ-обработкой</h1>
+          <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50 mb-3 sm:mb-4">Ссылка на статью:</p>
           <input
             type="text"
             placeholder="Введите URL статьи, например: https://example.com/article"
@@ -265,82 +265,82 @@ export default function Home() {
               }
             }}
             onBlur={() => validateUrl(url)}
-            className={`w-full p-4 mb-2 border-2 rounded-xl text-base bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 focus:outline-none focus:ring-2 focus:border-transparent transition-all ${
+            className={`w-full p-3 sm:p-4 mb-2 border-2 rounded-lg sm:rounded-xl text-sm sm:text-base bg-white dark:bg-zinc-900 text-black dark:text-zinc-100 focus:outline-none focus:ring-2 focus:border-transparent transition-all break-all ${
               urlError 
                 ? "border-red-500 focus:ring-red-500" 
                 : "border-zinc-300 dark:border-zinc-700 focus:ring-blue-500"
             }`}
           />
-          <p className="text-sm text-zinc-500 dark:text-zinc-400 mb-4">Укажите ссылку на англоязычную статью</p>
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mb-3 sm:mb-4 break-words">Укажите ссылку на англоязычную статью</p>
           {urlError && (
-            <p className="text-red-500 text-sm mb-4">{urlError}</p>
+            <p className="text-red-500 text-xs sm:text-sm mb-3 sm:mb-4 break-words">{urlError}</p>
           )}
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-lg font-semibold text-black dark:text-zinc-50">Выберите действие:</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+            <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50">Выберите действие:</p>
             <button
               onClick={handleClear}
-              className="px-4 py-2 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center gap-2"
+              className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto"
               title="Очистить все поля и результаты"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
               <span>Очистить</span>
             </button>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 w-full mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full mb-4 sm:mb-6">
             <button
               onClick={() => handleClick("about")}
-              className="flex-1 py-3.5 bg-blue-600 text-white font-semibold rounded-xl transition-all hover:bg-blue-700 hover:shadow-lg disabled:bg-blue-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              className="flex-1 py-3 sm:py-3.5 bg-blue-600 text-white text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all hover:bg-blue-700 hover:shadow-lg disabled:bg-blue-300 disabled:cursor-not-allowed disabled:hover:shadow-none break-words"
               disabled={!url || loading}
               title="Получить краткое объяснение содержания статьи (2-3 предложения)"
             >О чем статья?</button>
             <button
               onClick={() => handleClick("thesis")}
-              className="flex-1 py-3.5 bg-green-600 text-white font-semibold rounded-xl transition-all hover:bg-green-700 hover:shadow-lg disabled:bg-green-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              className="flex-1 py-3 sm:py-3.5 bg-green-600 text-white text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all hover:bg-green-700 hover:shadow-lg disabled:bg-green-300 disabled:cursor-not-allowed disabled:hover:shadow-none break-words"
               disabled={!url || loading}
               title="Создать список основных тезисов статьи (5-7 пунктов)"
             >Тезисы</button>
             <button
               onClick={() => handleClick("telegram")}
-              className="flex-1 py-3.5 bg-purple-600 text-white font-semibold rounded-xl transition-all hover:bg-purple-700 hover:shadow-lg disabled:bg-purple-300 disabled:cursor-not-allowed disabled:hover:shadow-none"
+              className="flex-1 py-3 sm:py-3.5 bg-purple-600 text-white text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all hover:bg-purple-700 hover:shadow-lg disabled:bg-purple-300 disabled:cursor-not-allowed disabled:hover:shadow-none break-words"
               disabled={!url || loading}
               title="Создать пост для Telegram с эмодзи и ссылкой на источник"
             >Пост для Telegram</button>
           </div>
           {processStatus && (
-            <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
-              <p className="text-sm text-blue-700 dark:text-blue-300">{processStatus}</p>
+            <div className="mb-3 sm:mb-4 p-2 sm:p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <p className="text-xs sm:text-sm text-blue-700 dark:text-blue-300 break-words">{processStatus}</p>
             </div>
           )}
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-3 sm:mb-4">
               <AlertDescription className="flex items-start gap-2">
                 <div className="mt-0.5 flex-shrink-0">
                   <AlertIcon variant="destructive" />
                 </div>
-                <span>{error}</span>
+                <span className="text-xs sm:text-sm break-words">{error}</span>
               </AlertDescription>
             </Alert>
           )}
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-lg font-semibold text-black dark:text-zinc-50">Результат:</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+            <p className="text-base sm:text-lg font-semibold text-black dark:text-zinc-50">Результат:</p>
             {result && !loading && (
               <button
                 onClick={copyToClipboard}
-                className="px-4 py-2 text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 text-xs sm:text-sm bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg hover:bg-zinc-300 dark:hover:bg-zinc-700 transition-all flex items-center justify-center sm:justify-start gap-2 w-full sm:w-auto"
                 title="Копировать результат"
               >
                 {copied ? (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
                     <span>Скопировано!</span>
                   </>
                 ) : (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                     </svg>
                     <span>Копировать</span>
@@ -351,7 +351,7 @@ export default function Home() {
           </div>
           <div 
             ref={resultRef}
-            className="w-full min-h-[150px] p-6 border-2 border-zinc-200 dark:border-zinc-700 rounded-xl bg-zinc-50 dark:bg-zinc-900 text-black dark:text-zinc-100 relative"
+            className="w-full min-h-[150px] p-4 sm:p-6 border-2 border-zinc-200 dark:border-zinc-700 rounded-lg sm:rounded-xl bg-zinc-50 dark:bg-zinc-900 text-black dark:text-zinc-100 relative overflow-wrap break-words"
           >
             {loading ? (
               <div className="flex flex-col items-center justify-center h-full gap-3">
@@ -362,7 +362,7 @@ export default function Home() {
                 <span className="text-zinc-500 dark:text-zinc-400">Генерация...</span>
               </div>
             ) : (
-              <div className="whitespace-pre-wrap font-normal text-left">{result || <span className="text-zinc-400 dark:text-zinc-600 font-normal block text-center">Результат появится здесь после выбора действия</span>}</div>
+              <div className="whitespace-pre-wrap font-normal text-left text-sm sm:text-base break-words overflow-wrap">{result || <span className="text-zinc-400 dark:text-zinc-600 font-normal block text-center text-xs sm:text-sm">Результат появится здесь после выбора действия</span>}</div>
             )}
           </div>
         </div>
